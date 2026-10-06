@@ -1,0 +1,23 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Unit test suite
+        run: python -m unittest discover -s tests -t . -v
+      - name: Smoke run (c17 + c432 end to end)
+        run: |
+          python tools/run_atpg.py --circuits c17,c432 --results-dir /tmp/results
+          test -f /tmp/results/summary.md
